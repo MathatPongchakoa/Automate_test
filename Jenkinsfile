@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // กำหนด URL ของ Git Repository ของคุณ
+        // URL ของ Repository บน GitHub ของคุณ
         GIT_URL = 'https://github.com/MathatPongchakoa/Automate_test.git'
-        // กำหนดโฟลเดอร์สำหรับเก็บผลลัพธ์
+        // โฟลเดอร์สำหรับเก็บไฟล์ผลลัพธ์การทดสอบ
         RESULT_DIR = 'results'
     }
 
@@ -13,6 +13,7 @@ pipeline {
         stage('Checkout Code From Git') {
             steps {
                 echo '--- Step 1: Pulling latest code from GitHub ---'
+                // ดึงโค้ดจาก Branch main
                 git branch: 'main', url: "${GIT_URL}"
             }
         }
@@ -21,16 +22,16 @@ pipeline {
         stage('Run Test Automate') {
             steps {
                 echo '--- Step 2: Running Robot Framework Tests ---'
-                // สร้างโฟลเดอร์เก็บผลลัพธ์ (ถ้ายังไม่มี)
-                // และรันไฟล์ .robot ทั้งหมดในโฟลเดอร์
-                // ใช้คำสั่ง bat สำหรับ Windows หรือ sh สำหรับ Linux/Mac
                 script {
                     if (isUnix()) {
+                        // สำหรับ Linux/Mac
                         sh "mkdir -p ${RESULT_DIR}"
-                        sh "robot --outputdir ${RESULT_DIR} *.robot"
+                        sh "python3 -m robot --outputdir ${RESULT_DIR} *.robot"
                     } else {
+                        // สำหรับ Windows (เครื่องที่คุณใช้งานอยู่)
+                        // ใช้ python -m robot เพื่อให้ระบบเรียกโมดูลได้แม่นยำขึ้น
                         bat "if not exist ${RESULT_DIR} mkdir ${RESULT_DIR}"
-                        bat "robot --outputdir ${RESULT_DIR} *.robot"
+                        bat "python -m robot --outputdir ${RESULT_DIR} *.robot"
                     }
                 }
             }
@@ -41,26 +42,26 @@ pipeline {
             steps {
                 echo '--- Step 3: Archiving Results and Reports ---'
                 
-                // 1. เก็บไฟล์ HTML Report ไว้ดูย้อนหลังบน Jenkins
+                // 1. เก็บไฟล์ HTML Report (report.html, log.html) ไว้ดูบน Jenkins
                 archiveArtifacts artifacts: "${RESULT_DIR}/*.html", allowEmptyArchive: true
                 
-                // 2. แสดงผลสรุป Test Result (ถ้ามีไฟล์ output.xml)
-                // ปลั๊กอิน JUnit หรือ Robot จะช่วยสร้างกราฟสวยๆ ให้
-                junit "${RESULT_DIR}/*.xml"
+                // 2. ประมวลผลไฟล์ XML เพื่อแสดงกราฟสถิติในหน้าโปรเจกต์
+                // หมายเหตุ: ต้องติดตั้ง JUnit Plugin ใน Jenkins ด้วย
+                junit testResults: "${RESULT_DIR}/*.xml", allowEmptyResults: true
             }
         }
     }
 
-    // ส่วนจัดการหลังจบการทำงาน (Post-action)
+    // ส่วนจัดการหลังรัน Pipeline เสร็จสิ้น
     post {
         always {
-            echo 'Pipeline finished. Cleaning up workspace if necessary.'
+            echo 'Pipeline execution finished.'
         }
         success {
-            echo 'SUCCESS: All tests passed!'
+            echo 'STATUS: SUCCESS - All automated tests passed!'
         }
         failure {
-            echo 'FAILURE: Some tests failed. Please review the report.html'
+            echo 'STATUS: FAILURE - Tests failed or script error. Check Console Output.'
         }
     }
 }
