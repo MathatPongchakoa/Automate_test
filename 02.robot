@@ -3,7 +3,7 @@ Library           SeleniumLibrary
 
 *** Variables ***
 ${URL}            http://the-internet.herokuapp.com/login
-${BROWSER}        headlesschrome
+${BROWSER}        chrome
 ${VALID_USER}     tomsmith
 ${VALID_PASS}     SuperSecretPassword!
 ${INVALID_USER}   tomholland
