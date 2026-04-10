@@ -3,7 +3,7 @@ Library           SeleniumLibrary
 
 *** Variables ***
 ${URL}            http://the-internet.herokuapp.com/login
-${BROWSER}        chrome
+${BROWSER}        headlesschrome
 ${VALID_USER}     tomsmith
 ${VALID_PASS}     SuperSecretPassword!
 ${INVALID_USER}   tomholland
@@ -16,10 +16,18 @@ Login success
     Input Text       id:username    ${VALID_USER}
     Input Text       id:password    ${VALID_PASS}
     Click Button     class:radius
+    
+    # เพิ่มบรรทัดนี้: รอจนกว่าข้อความความสำเร็จจะปรากฏ
+    Wait Until Page Contains    You logged into a secure area!    timeout=5s
+    
     Page Should Contain    You logged into a secure area!
     
     # ทดสอบ Logout
     Click Link       xpath://a[@href="/logout"]
+    
+    # เพิ่มบรรทัดนี้ด้วย: รอจนกว่าจะกลับมาหน้า Logout สำเร็จ
+    Wait Until Page Contains    You logged out of the secure area!    timeout=5s
+    
     Page Should Contain    You logged out of the secure area!
     [Teardown]       Close Browser
 
