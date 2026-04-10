@@ -1,0 +1,48 @@
+*** Settings ***
+Library           SeleniumLibrary
+
+*** Variables ***
+${URL}            http://the-internet.herokuapp.com/login
+${BROWSER}        chrome
+${VALID_USER}     tomsmith
+${VALID_PASS}     SuperSecretPassword!
+${INVALID_USER}   tomholland
+${INVALID_PASS}   Password!
+
+*** Test Cases ***
+Login success
+    [Documentation]    ตรวจสอบการเข้าสู่ระบบสำเร็จและการออกจากระบบ
+    Open Browser To Login Page
+    Input Text       id:username    ${VALID_USER}
+    Input Text       id:password    ${VALID_PASS}
+    Click Button     class:radius
+    Page Should Contain    You logged into a secure area!
+    
+    # ทดสอบ Logout
+    Click Link       xpath://a[@href="/logout"]
+    Page Should Contain    You logged out of the secure area!
+    [Teardown]       Close Browser
+
+Login failed - Password incorrect
+    [Documentation]    ตรวจสอบกรณีรหัสผ่านผิด
+    Open Browser To Login Page
+    Input Text       id:username    ${VALID_USER}
+    Input Text       id:password    ${INVALID_PASS}
+    Click Button     class:radius
+    Element Should Contain    id:flash    Your password is invalid!
+    [Teardown]       Close Browser
+
+Login failed - Username not found
+    [Documentation]    ตรวจสอบกรณีไม่พบชื่อผู้ใช้
+    Open Browser To Login Page
+    Input Text       id:username    ${INVALID_USER}
+    Input Text       id:password    ${VALID_PASS}
+    Click Button     class:radius
+    Element Should Contain    id:flash    Your username is invalid!
+    [Teardown]       Close Browser
+
+*** Keywords ***
+Open Browser To Login Page
+    Open Browser    ${URL}    ${BROWSER}
+    Maximize Browser Window
+    Wait Until Element Is Visible    id:username
