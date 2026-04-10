@@ -37,6 +37,10 @@ Login failed - Password incorrect
     Input Text       id:username    ${VALID_USER}
     Input Text       id:password    ${INVALID_PASS}
     Click Button     class:radius
+    
+    # เพิ่มบรรทัดนี้: รอให้กล่อง flash ปรากฏขึ้นมาก่อน
+    Wait Until Element Is Visible    id:flash    timeout=5s
+    
     Element Should Contain    id:flash    Your password is invalid!
     [Teardown]       Close Browser
 
@@ -46,6 +50,10 @@ Login failed - Username not found
     Input Text       id:username    ${INVALID_USER}
     Input Text       id:password    ${VALID_PASS}
     Click Button     class:radius
+    
+    # เพิ่มบรรทัดนี้: รอให้กล่อง flash ปรากฏขึ้นมาก่อน
+    Wait Until Element Is Visible    id:flash    timeout=5s
+    
     Element Should Contain    id:flash    Your username is invalid!
     [Teardown]       Close Browser
 
@@ -53,4 +61,6 @@ Login failed - Username not found
 Open Browser To Login Page
     Open Browser    ${URL}    ${BROWSER}
     Maximize Browser Window
+    # ตั้งค่าให้ Selenium รอทุกคำสั่งอัตโนมัติ 2 วินาที ถ้ายังหา Element ไม่เจอ
+    Set Selenium Implicit Wait    2 seconds
     Wait Until Element Is Visible    id:username
